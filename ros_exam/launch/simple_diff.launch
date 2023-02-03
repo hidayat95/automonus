@@ -1,0 +1,21 @@
+<launch>
+
+  <arg name="model" default="$(find ros_exam)/urdf/simple_diff.xacro"/>
+  <arg name="gui" default="false" />
+  <arg name="rvizconfig" default="$(find urdf_tutorial)/rviz/urdf.rviz" />
+
+  <param name="robot_description" command="$(find xacro)/xacro.py $(arg model)" />
+  <param name="use_gui" value="$(arg gui)"/>
+
+  <node name="joint_state_publisher" pkg="joint_state_publisher" type="joint_state_publisher" />
+  <node name="robot_state_publisher" pkg="robot_state_publisher" type="robot_state_publisher" />
+  <node name="rviz" pkg="rviz" type="rviz" args="-d $(arg rvizconfig)" required="false" />
+
+  <node name="rqt_robot_steering" pkg="rqt_robot_steering" type="rqt_robot_steering">
+    <param name="default_topic" value="/diff_drive_controller/cmd_vel"/>
+  </node>
+
+  <rosparam file="$(find ros_exam)/config/diff_drive.yaml" command="load"/>
+  <node name="diff_drive_gazebo" pkg="controller_manager" type="spawner"  respawn="false" output="screen" args="diff_drive_controller"/>
+
+</launch>

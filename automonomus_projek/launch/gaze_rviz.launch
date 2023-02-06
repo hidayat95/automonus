@@ -1,0 +1,39 @@
+<launch>
+  <arg name="model" default="$(find automonomus_projek)/urdf/tank.xacro"/>
+  <arg name="rvizconfig" default="$(find urdf_tutorial)/rviz/urdf.rviz" />
+
+  <node name="joint_state_publisher" pkg="joint_state_publisher" type="joint_state_publisher" />
+
+
+  <include file="$(find urdf_sim_tutorial)/launch/gazebo.launch">
+    <arg name="model" value="$(arg model)" />
+  </include>
+  
+  
+<!-- RQT VIEWER -->
+  
+  <node name="rqt_ez_publisher" pkg="rqt_ez_publisher" type="rqt_ez_publisher">
+    <rosparam file="$(find automonomus_projek)/config/head_slide.yaml" command="load"/>
+  </node>
+  
+  <node name="rqt_image_view" pkg="rqt_image_view" type="rqt_image_view" respawn="false" output="screen"/>
+   
+
+  <param name="robot_description" command="$(find xacro)/xacro '$(arg model)'" />
+
+  <node name="rviz" pkg="rviz" type="rviz" args="-d $(arg rvizconfig)" />
+
+  <rosparam file="$(find automonomus_projek)/config/diff_drive.yaml" command="load"/>
+  <rosparam file="$(find automonomus_projek)/config/head.yaml" command="load" ns="head_controller"/>
+  <rosparam file="$(find automonomus_projek)/config/joints.yaml" command="load"/>
+
+
+<!-- DIFF DRIVE CONTROLLER -->
+
+  <node name="diff_drive_gazebo" pkg="controller_manager" type="spawner"  respawn="false" output="screen" args="diff_drive_controller head_controller"/>
+
+  <node name="rqt_robot_steering" pkg="rqt_robot_steering" type="rqt_robot_steering">
+    <param name="default_topic" value="/diff_drive_controller/cmd_vel"/>
+  </node>
+
+</launch>
